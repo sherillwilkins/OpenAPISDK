@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.w83ll43.openapisdk.config.OpenAPIClientConfig
