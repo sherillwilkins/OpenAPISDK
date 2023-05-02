@@ -82,7 +82,6 @@ public class ApacheHttpClient extends BaseApiClient {
                     for(String value : entry.getValue()){
                         uriBuilder.addParameter(entry.getKey(), value);
                     }
-
                 }
             }
             builder.setUri(uriBuilder.build());

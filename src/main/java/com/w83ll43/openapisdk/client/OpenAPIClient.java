@@ -36,7 +36,7 @@ public class OpenAPIClient extends ApacheHttpClient {
         this.appSecret = secretKey;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
-        this.host = "localhost:8081";
+        this.host = "localhost:8082";
         init();
     }
 
