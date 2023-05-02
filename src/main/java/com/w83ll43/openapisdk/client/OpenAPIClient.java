@@ -4,27 +4,44 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import com.w83ll43.openapisdk.common.Result;
-import com.w83ll43.openapisdk.entity.JokeText;
-import com.w83ll43.openapisdk.entity.Sentence;
+import com.w83ll43.openapisdk.enums.HttpMethod;
+import com.w83ll43.openapisdk.model.entity.JokeText;
+import com.w83ll43.openapisdk.model.entity.Sentence;
+import com.w83ll43.openapisdk.model.request.ApiRequest;
+import com.w83ll43.openapisdk.model.response.ApiResponse;
 import com.w83ll43.openapisdk.utils.SignUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
-public class OpenAPIClient {
+public class OpenAPIClient extends ApacheHttpClient {
 
     /**
      * 请求地址
      */
     private static final String GATEWAY_HOST = "http://localhost:8081";
 
-    private final String accessKey;
+    private String accessKey;
 
-    private final String secretKey;
+    private String secretKey;
+
+    static OpenAPIClient instance = new OpenAPIClient();
+
+    public static OpenAPIClient getInstance() {return instance;}
+
+    public OpenAPIClient() {}
 
     public OpenAPIClient(String accessKey, String secretKey) {
+        this.appKey = accessKey;
+        this.appSecret = secretKey;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
+        this.host = "localhost:8081";
+        init();
+    }
+
+    public void init() {
+        super.init(this.accessKey, this.secretKey, this.host);
     }
 
     // 然后在这里写 SDK 方法
@@ -85,5 +102,11 @@ public class OpenAPIClient {
 
         JokeText joke = JSONUtil.toBean(jokeString, JokeText.class);
         return joke;
+    }
+
+    public ApiResponse getRandomJokeByClient() {
+        String path = "/api/joke";
+        ApiRequest request = new ApiRequest(HttpMethod.GET, path);
+        return sendSyncRequest(request);
     }
 }

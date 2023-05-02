@@ -1,4 +1,4 @@
-package com.w83ll43.openapisdk.entity;
+package com.w83ll43.openapisdk.model.entity;
 
 import lombok.Data;
 
