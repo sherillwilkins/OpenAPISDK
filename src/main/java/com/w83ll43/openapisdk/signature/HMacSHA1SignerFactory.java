@@ -59,11 +59,11 @@ public class HMacSHA1SignerFactory implements ISignerFactory{
             Mac hmacSha1 = Mac.getInstance(METHOD);
 
             // 使用指定的字符集 UTF-8 将字符串编码为 byte 序列
-            byte[] keyBytes = secretKey.getBytes(SDKConstant.CLOUDAPI_ENCODING);
+            byte[] keyBytes = secretKey.getBytes(SDKConstant.ENCODING);
             hmacSha1.init(new SecretKeySpec(keyBytes, 0, keyBytes.length, METHOD));
 
             // 使用 secretKey 对 strToSign 进行签名
-            byte[] md5Result = hmacSha1.doFinal(strToSign.getBytes(SDKConstant.CLOUDAPI_ENCODING));
+            byte[] md5Result = hmacSha1.doFinal(strToSign.getBytes(SDKConstant.ENCODING));
             return Base64.encodeBase64String(md5Result);
         }
 

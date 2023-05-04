@@ -1,6 +1,6 @@
 package com.w83ll43.openapisdk.client;
 
-import com.w83ll43.openapisdk.exception.SDKException;
+import com.w83ll43.openapisdk.enums.Scheme;
 import com.w83ll43.openapisdk.model.request.ApiRequest;
 import com.w83ll43.openapisdk.model.response.ApiResponse;
 
@@ -23,20 +23,14 @@ public abstract class BaseApiClient {
     String appSecret;
 
     /**
+     * 请求协议
+     */
+    Scheme scheme;
+
+    /**
      * 请求地址
      */
     String host;
-
-    /**
-     * 是否已经初始化
-     */
-    boolean isInit = false;
-
-    protected void checkIsInit(){
-        if(!isInit){
-            throw new SDKException("使用前必须初始化客户端");
-        }
-    }
 
     /**
      * 发送同步请求
@@ -45,6 +39,7 @@ public abstract class BaseApiClient {
      */
     protected abstract ApiResponse sendSyncRequest(ApiRequest apiRequest);
 
+    // TODO 完成异步请求
 //    /**
 //     * 发送异步请求
 //     * @param apiRequest

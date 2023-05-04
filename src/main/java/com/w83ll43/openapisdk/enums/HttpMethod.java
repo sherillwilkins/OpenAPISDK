@@ -11,61 +11,62 @@ public enum HttpMethod {
      * HTTP GET 请求
      * 表单提交 接受 JSON
      */
-    GET("GET", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    GET("GET", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
+    POST("POST", HttpConstant.CONTENT_TYPE_JSON, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP POST 请求
      * 表单提交 接受 JSON
      */
-    POST_FORM("POST", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    POST_FORM("POST", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP POST 请求
      * stream 流提交 (文件上传) 接受 JSON
      */
-    POST_BODY("POST", HttpConstant.CLOUDAPI_CONTENT_TYPE_STREAM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    POST_BODY("POST", HttpConstant.CONTENT_TYPE_STREAM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP PUT 请求
      * 表单提交 接受 JSON
      */
-    PUT_FORM("PUT", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    PUT_FORM("PUT", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP PUT 请求
      * stream 流提交 (文件上传) 接受 JSON
      */
-    PUT_BODY("PUT", HttpConstant.CLOUDAPI_CONTENT_TYPE_STREAM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    PUT_BODY("PUT", HttpConstant.CONTENT_TYPE_STREAM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP PATCH 请求
      * 表单提交 接受 JSON
      */
-    PATCH_FORM("PATCH", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    PATCH_FORM("PATCH", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
-     * HTTP PUT 请求
+     * HTTP PATCH 请求
      * stream 流提交 (文件上传) 接受 JSON
      */
-    PATCH_BODY("PATCH", HttpConstant.CLOUDAPI_CONTENT_TYPE_STREAM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    PATCH_BODY("PATCH", HttpConstant.CONTENT_TYPE_STREAM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP DELETE 请求
      * 表单提交 接受 JSON
      */
-    DELETE("DELETE", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    DELETE("DELETE", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP HEAD 请求
      * 表单提交 接受 JSON
      */
-    HEAD("HEAD", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON),
+    HEAD("HEAD", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON),
 
     /**
      * HTTP OPTIONS 请求
      * 表单提交 接受 JSON
      */
-    OPTIONS("OPTIONS", HttpConstant.CLOUDAPI_CONTENT_TYPE_FORM, HttpConstant.CLOUDAPI_CONTENT_TYPE_JSON);
+    OPTIONS("OPTIONS", HttpConstant.CONTENT_TYPE_FORM, HttpConstant.CONTENT_TYPE_JSON);
 
     private String value;
 

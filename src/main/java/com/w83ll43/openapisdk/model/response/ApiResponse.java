@@ -37,12 +37,15 @@ public final class ApiResponse{
      */
     private Map<String, List<String>> headers = new HashMap<>();
 
-    private byte[] body;
+    /**
+     * 响应体
+     */
+    private byte[] bytesBody;
 
     /**
      * 响应体
      */
-    private String bodyStr;
+    private String stringBody;
 
     public ApiResponse(int code){
         this.code = code;
@@ -97,9 +100,9 @@ public final class ApiResponse{
         if(jsonObject.get("status") != null) {
             this.code = Integer.parseInt(jsonObject.get("status").asText());
         }
-        this.contentType = getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE);
-        if (null != this.getFirstHeaderValue(SDKConstant.CLOUDAPI_X_CA_ERROR_MESSAGE)) {
-            this.message = this.getFirstHeaderValue(SDKConstant.CLOUDAPI_X_CA_ERROR_MESSAGE);
+        this.contentType = getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE);
+        if (null != this.getFirstHeaderValue(SDKConstant.X_CA_ERROR_MESSAGE)) {
+            this.message = this.getFirstHeaderValue(SDKConstant.X_CA_ERROR_MESSAGE);
         }
     }
 
@@ -121,8 +124,8 @@ public final class ApiResponse{
             }
         }
 
-        String contentType = this.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE);
-        Charset charset = SDKConstant.CLOUDAPI_ENCODING;
+        String contentType = this.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE);
+        Charset charset = SDKConstant.ENCODING;
         if(null  != contentType){
             try{
                 contentType = contentType.toLowerCase();
@@ -139,8 +142,8 @@ public final class ApiResponse{
 
         JsonNode bodyNode = message.get("body");
         if(bodyNode != null){
-            bodyStr = bodyNode.asText();
-            body = bodyStr.getBytes(charset);
+            stringBody = bodyNode.asText();
+            bytesBody = stringBody.getBytes(charset);
         }
     }
 
@@ -184,19 +187,19 @@ public final class ApiResponse{
         this.headers = headers;
     }
 
-    public byte[] getBody() {
-        return body;
+    public byte[] getBytesBody() {
+        return bytesBody;
     }
 
-    public void setBody(byte[] body) {
-        this.body = body;
+    public void setBytesBody(byte[] bytesBody) {
+        this.bytesBody = bytesBody;
     }
 
-    public String getBodyStr() {
-        return bodyStr;
+    public String getStringBody() {
+        return stringBody;
     }
 
-    public void setBodyStr(String bodyStr) {
-        this.bodyStr = bodyStr;
+    public void setStringBody(String stringBody) {
+        this.stringBody = stringBody;
     }
 }

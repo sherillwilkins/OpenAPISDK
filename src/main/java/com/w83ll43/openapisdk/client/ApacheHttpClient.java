@@ -1,6 +1,7 @@
 package com.w83ll43.openapisdk.client;
 
 import com.w83ll43.openapisdk.constant.HttpConstant;
+import com.w83ll43.openapisdk.enums.Scheme;
 import com.w83ll43.openapisdk.exception.SDKException;
 import com.w83ll43.openapisdk.model.request.ApiRequest;
 import com.w83ll43.openapisdk.model.response.ApiResponse;
@@ -25,7 +26,6 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +37,26 @@ public class ApacheHttpClient extends BaseApiClient {
     protected ApacheHttpClient(){}
 
     public void init(String appKey, String appSecret, String host) {
+
+        this.scheme = Scheme.HTTP;
+
+        /**
+         * AppKey
+         * APP KEY
+         */
+        this.appKey = appKey;
+
+        /**
+         * AppSecret
+         * APP 密钥
+         */
+        this.appSecret = appSecret;
+
+        /**
+         * API HOST
+         * API 域名
+         */
+        this.host = host;
 
         // 创建请求配置信息
         RequestConfig defaultConfig = RequestConfig.custom()
@@ -52,16 +72,12 @@ public class ApacheHttpClient extends BaseApiClient {
                 // 设置默认参数
                 .setDefaultRequestConfig(defaultConfig)
                 .build();
-
-        this.appKey = appKey;
-        this.appSecret = appSecret;
-        this.host = host;
     }
-
 
     private HttpUriRequest buildRequest(ApiRequest apiRequest) {
 
         apiRequest.setHost(this.host);
+        apiRequest.setScheme(this.scheme);
 
         // 为请求添加请求头
         ApiRequestMaker.make(apiRequest , appKey , appSecret);
@@ -74,9 +90,10 @@ public class ApacheHttpClient extends BaseApiClient {
          */
         try {
             URIBuilder uriBuilder = new URIBuilder();
-            uriBuilder.setScheme("http");
+            uriBuilder.setScheme(apiRequest.getScheme().getValue());
             uriBuilder.setHost(apiRequest.getHost());
             uriBuilder.setPath(apiRequest.getPath());
+            // 查询参数不为空
             if (!HttpCommonUtil.isEmpty(apiRequest.getQuerys())) {
                 for (Map.Entry<String, List<String>> entry : apiRequest.getQuerys().entrySet()) {
                     for(String value : entry.getValue()){
@@ -92,17 +109,21 @@ public class ApacheHttpClient extends BaseApiClient {
         EntityBuilder bodyBuilder = EntityBuilder.create();
 
         // 设置请求数据类型
-        if(null == apiRequest.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE)) {
+        if(null == apiRequest.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE)) {
             bodyBuilder.setContentType(ContentType.parse(apiRequest.getMethod().getRequestContentType()));
-        }
-        else{
-            bodyBuilder.setContentType(ContentType.parse(apiRequest.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE)));
+        } else {
+            bodyBuilder.setContentType(ContentType.parse(apiRequest.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE)));
         }
 
+        // TODO POST 请求 JSON 数据
+//        JSONObject json = new JSONObject();
+//        json.set("type", "a");
+//        builder.setEntity(new StringEntity(json.toString(),"UTF-8"));
+
         if (!HttpCommonUtil.isEmpty(apiRequest.getFormParams())) {
-            /*
-             *  如果 formParams 不为空
-             *  将 Form 中的内容以 urlQueryParams 的格式存放在body中 (k1=v1&k2=v2&k3=v3)
+            /**
+             * 如果 formParams 不为空
+             * 将 Form 中的内容以 urlQueryParams 的格式存放在 body 中 (k1=v1&k2=v2&k3=v3)
              */
             List<NameValuePair> paramList = new ArrayList<>();
 
@@ -113,11 +134,12 @@ public class ApacheHttpClient extends BaseApiClient {
             }
             bodyBuilder.setParameters(paramList);
             builder.setEntity(bodyBuilder.build());
-        } else if (!HttpCommonUtil.isEmpty(apiRequest.getBody())) {
-            bodyBuilder.setBinary(apiRequest.getBody());
+        } else if (!HttpCommonUtil.isEmpty(apiRequest.getBytesBody())) {
+            bodyBuilder.setBinary(apiRequest.getBytesBody());
             builder.setEntity(bodyBuilder.build());
         }
 
+        // 设置请求头信息
         for (Map.Entry<String, List<String>> entry : apiRequest.getHeaders().entrySet()) {
             for(String value : entry.getValue()){
                 builder.addHeader(entry.getKey(), value);
@@ -127,56 +149,65 @@ public class ApacheHttpClient extends BaseApiClient {
         return builder.build();
     }
 
+    /**
+     * 将 HttpResponse 解析到 ApiResponse 中
+     * @param httpResponse
+     * @return
+     * @throws IOException
+     */
     private ApiResponse parseToApiResponse(HttpResponse httpResponse) throws IOException {
-        ApiResponse result = new ApiResponse(httpResponse.getStatusLine().getStatusCode());
+        ApiResponse apiResponse = new ApiResponse(httpResponse.getStatusLine().getStatusCode());
 
-        // headers
-        result.setHeaders(new HashMap<>());
+        // 解析响应头 headers
         for (Header header : httpResponse.getAllHeaders()) {
-            List<String> values = result.getHeaders().get(header.getName());
+            List<String> values = apiResponse.getHeaders().get(header.getName());
 
             if(values == null){
                 values = new ArrayList<>();
             }
 
             values.add(header.getValue());
-            result.getHeaders().put(header.getName().toLowerCase() , values);
+            apiResponse.getHeaders().put(header.getName().toLowerCase() , values);
         }
 
-        // message
-        result.setMessage(httpResponse.getStatusLine().getReasonPhrase());
+        // 解析响应消息 message
+        apiResponse.setMessage(httpResponse.getStatusLine().getReasonPhrase());
 
         if(httpResponse.getEntity() != null){
-            // content type
+            // Content-Type
             Header contentType = httpResponse.getEntity().getContentType();
             if(contentType != null){
-                result.setContentType(contentType.getValue());
-            }
-            else
-            {
-                result.setContentType(HttpConstant.CLOUDAPI_CONTENT_TYPE_TEXT);
+                apiResponse.setContentType(contentType.getValue());
+            } else {
+                apiResponse.setContentType(HttpConstant.CONTENT_TYPE_TEXT);
             }
 
-            // body
-            result.setBody(EntityUtils.toByteArray(httpResponse.getEntity()));
+            // 解析响应体 Body
+            apiResponse.setBytesBody(EntityUtils.toByteArray(httpResponse.getEntity()));
 
-            String contentMD5 = result.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CA_CONTENT_MD5);
+            String contentMD5 = apiResponse.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CA_CONTENT_MD5);
             if(null != contentMD5 && !"".equals(contentMD5)){
-                String localContentMd5 = SignUtil.base64AndMD5(result.getBody());
+                // 消息摘要
+                String localContentMd5 = SignUtil.messageDigest(apiResponse.getBytesBody());
                 if(!contentMD5.equalsIgnoreCase(localContentMd5)){
-                    throw new SDKException("Server Content MD5 does not match body content , server md5 is " + contentMD5 + "  local md5 is " + localContentMd5 + " body is " + new String(result.getBody()));
+                    throw new SDKException("Server Content MD5 does not match body content , server md5 is " + contentMD5 + "  local md5 is " + localContentMd5 + " body is " + new String(apiResponse.getBytesBody()));
                 }
             }
         }else{
-            String contentTypeStr = result.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE);
+            String contentTypeStr = apiResponse.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE);
             if(null == contentTypeStr){
-                contentTypeStr = HttpConstant.CLOUDAPI_CONTENT_TYPE_TEXT;
+                contentTypeStr = HttpConstant.CONTENT_TYPE_TEXT;
             }
-            result.setContentType(contentTypeStr);
+            apiResponse.setContentType(contentTypeStr);
         }
-        return result;
+        return apiResponse;
     }
 
+    /**
+     * 发送同步请求
+     * @param apiRequest
+     * @return
+     */
     @Override
     public final ApiResponse sendSyncRequest(ApiRequest apiRequest) {
         HttpUriRequest httpRequest = buildRequest(apiRequest);

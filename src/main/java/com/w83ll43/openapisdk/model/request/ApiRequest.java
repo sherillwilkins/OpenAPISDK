@@ -2,12 +2,18 @@ package com.w83ll43.openapisdk.model.request;
 
 import com.w83ll43.openapisdk.enums.HttpMethod;
 import com.w83ll43.openapisdk.enums.ParamPosition;
+import com.w83ll43.openapisdk.enums.Scheme;
 import com.w83ll43.openapisdk.exception.SDKException;
 import com.w83ll43.openapisdk.signature.HMacSHA256SignerFactory;
 
 import java.util.*;
 
 public final class ApiRequest {
+
+    /**
+     * 请求协议
+     */
+    private Scheme scheme;
 
     /**
      * 请求方法枚举
@@ -30,9 +36,14 @@ public final class ApiRequest {
     private String url;
 
     /**
-     * 请求体
+     * 字符串类型请求体
      */
-    private byte[] body;
+    private String stringBody;
+
+    /**
+     * 字节数组类型请求体
+     */
+    private byte[] bytesBody;
 
     /**
      * 请求头
@@ -82,13 +93,13 @@ public final class ApiRequest {
     public ApiRequest(HttpMethod method, String path) {
         this.method = method;
         this.path = path;
-        this.body = new byte[]{};
+        this.bytesBody = new byte[]{};
     }
 
-    public ApiRequest(HttpMethod method, String path, byte[] body) {
+    public ApiRequest(HttpMethod method, String path, byte[] bytesBody) {
         this.method = method;
         this.path = path;
-        this.body = body;
+        this.bytesBody = bytesBody;
     }
 
     /**
@@ -206,7 +217,7 @@ public final class ApiRequest {
      * @return
      */
     public ApiRequest duplicate(){
-        ApiRequest apiRequest = new ApiRequest(method , path , body);
+        ApiRequest apiRequest = new ApiRequest(method , path , bytesBody);
         if(null != host) {
             apiRequest.host = host;
         }
@@ -229,6 +240,22 @@ public final class ApiRequest {
             apiRequest.signatureMethod = signatureMethod;
         }
         return apiRequest;
+    }
+
+    public Scheme getScheme() {
+        return scheme;
+    }
+
+    public void setScheme(Scheme scheme) {
+        this.scheme = scheme;
+    }
+
+    public String getStringBody() {
+        return stringBody;
+    }
+
+    public void setStringBody(String stringBody) {
+        this.stringBody = stringBody;
     }
 
     public HttpMethod getMethod() {
@@ -263,12 +290,12 @@ public final class ApiRequest {
         this.url = url;
     }
 
-    public byte[] getBody() {
-        return body;
+    public byte[] getBytesBody() {
+        return bytesBody;
     }
 
-    public void setBody(byte[] body) {
-        this.body = body;
+    public void setBytesBody(byte[] bytesBody) {
+        this.bytesBody = bytesBody;
     }
 
     public Map<String, List<String>> getHeaders() {

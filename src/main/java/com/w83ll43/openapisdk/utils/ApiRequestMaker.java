@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Created by fred on 2017/7/14.
+ * ApiRequest 构建器
  */
 public class ApiRequestMaker {
 
@@ -36,64 +36,65 @@ public class ApiRequestMaker {
 
         Date current = request.getCurrentDate() == null ? new Date() : request.getCurrentDate();
         // 设置请求头中的时间戳
-        if(null == request.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_DATE)) {
-            request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_DATE, getHttpDateHeaderValue(current));
+        if(null == request.getFirstHeaderValue(HttpConstant.HTTP_HEADER_DATE)) {
+            request.addHeader(HttpConstant.HTTP_HEADER_DATE, getHttpDateHeaderValue(current));
         }
 
         // 设置请求头中的时间戳 以 timeIntervalSince1970 的形式
-        request.addHeader(SDKConstant.CLOUDAPI_X_CA_TIMESTAMP, String.valueOf(current.getTime()));
+        request.addHeader(SDKConstant.X_CA_TIMESTAMP, String.valueOf(current.getTime()));
 
         // 请求放重放 Nonce 15 分钟内保持唯一 建议使用UUID
         if(request.isGenerateNonce()){
-            if(null == request.getFirstHeaderValue(SDKConstant.CLOUDAPI_X_CA_NONCE)) {
-                request.addHeader(SDKConstant.CLOUDAPI_X_CA_NONCE, UUID.randomUUID().toString());
+            if(null == request.getFirstHeaderValue(SDKConstant.X_CA_NONCE)) {
+                request.addHeader(SDKConstant.X_CA_NONCE, UUID.randomUUID().toString());
             }
         }
 
         // 设置请求头中的 UserAgent
-        request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_USER_AGENT, SDKConstant.CLOUDAPI_USER_AGENT);
+        request.addHeader(HttpConstant.HTTP_HEADER_USER_AGENT, SDKConstant.USER_AGENT);
 
         // 设置请求头中的主机地址
-        request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_HOST, request.getHost());
+        request.addHeader(HttpConstant.HTTP_HEADER_HOST, request.getHost());
 
         // 设置请求头中的 Api 绑定的的 AppKey
         if(request.isNeedSignature()) {
-            request.addHeader(SDKConstant.CLOUDAPI_X_CA_KEY, appKey);
+            request.addHeader(SDKConstant.X_CA_KEY, appKey);
         }
 
         // 设置签名版本号
-        request.addHeader(SDKConstant.CLOUDAPI_X_CA_VERSION, SDKConstant.CLOUDAPI_CA_VERSION_VALUE);
+        request.addHeader(SDKConstant.CA_VERSION, SDKConstant.CA_VERSION_VALUE);
 
         // 设置请求数据类型
-        if(null == request.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE)) {
-            request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_TYPE, request.getMethod().getRequestContentType());
+        if(null == request.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE)) {
+            request.addHeader(HttpConstant.HTTP_HEADER_CONTENT_TYPE, request.getMethod().getRequestContentType());
         }
 
         // 设置应答数据类型
-        if(null == request.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_ACCEPT)){
-            request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_ACCEPT, request.getMethod().getAcceptContentType());
+        if(null == request.getFirstHeaderValue(HttpConstant.HTTP_HEADER_ACCEPT)){
+            request.addHeader(HttpConstant.HTTP_HEADER_ACCEPT, request.getMethod().getAcceptContentType());
         }
 
         // 设置签名函数方法
         if (request.isNeedSignature() && !StringUtils.isEmpty(request.getSignatureMethod())) {
-            request.addHeader(SDKConstant.CLOUDAPI_X_CA_SIGNATURE_METHOD, request.getSignatureMethod());
+            request.addHeader(SDKConstant.X_CA_SIGNATURE_METHOD, request.getSignatureMethod());
         }
 
         /**
          *  如果 formParams 不为空
          *  将 Form 中的内容拼接成字符串后使用 UTF8 编码序列化成 Byte 数组后加入到 Request 中去
          */
-        if(null != request.getBody() && request.isGenerateContentMd5() && request.getBody().length >0 && null == request.getFirstHeaderValue(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_MD5)){
-            request.addHeader(HttpConstant.CLOUDAPI_HTTP_HEADER_CONTENT_MD5 , SignUtil.base64AndMD5(request.getBody()));
+        if(null != request.getBytesBody() && request.isGenerateContentMd5() && request.getBytesBody().length >0 && null == request.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_MD5)){
+            request.addHeader(HttpConstant.HTTP_HEADER_CONTENT_MD5 , SignUtil.messageDigest(request.getBytesBody()));
         }
 
         /**
-         *  将 Request 中的 httpMethod、headers、path、queryParam、formParam 合成一个字符串用 hmacSha256/hmacSha1 算法双向加密进行签名
-         *  签名内容放到 Http 头中，用作服务器校验
+         *  将 Request 中的 httpMethod、headers、path、queryParam、formParam 合成一个字符串
+         *  用 hmacSha256/hmacSha1 算法双向加密进行签名
+         *  签名内容放到 Http 头中 用作服务器校验
          */
         if(request.isNeedSignature()) {
             String signature = SignUtil.sign(request, appSecret);
-            request.addHeader(SDKConstant.CLOUDAPI_X_CA_SIGNATURE, signature);
+            request.addHeader(SDKConstant.X_CA_SIGNATURE, signature);
         }
 
         /**
@@ -104,14 +105,20 @@ public class ApiRequestMaker {
             List<String> values = request.getHeaders().get(key);
             if(null != values && values.size() > 0){
                 for(int i = 0 ; i < values.size() ; i++){
-                    byte[] temp = values.get(i).getBytes(SDKConstant.CLOUDAPI_ENCODING);
-                    values.set(i , new String(temp , SDKConstant.CLOUDAPI_HEADER_ENCODING));
+                    byte[] temp = values.get(i).getBytes(SDKConstant.ENCODING);
+                    values.set(i , new String(temp , SDKConstant.HEADER_ENCODING));
                 }
             }
             request.getHeaders().put(key , values);
         }
     }
 
+    /**
+     * 整合 Path
+     * @param path
+     * @param pathParams
+     * @return
+     */
     private static String combinePathParam(String path , Map<String , String> pathParams){
         if(pathParams == null){
             return path;
@@ -123,9 +130,14 @@ public class ApiRequestMaker {
         return path;
     }
 
+    /**
+     * 获取 HTTP 请求头 Date 的值
+     * @param date
+     * @return
+     */
     private static String getHttpDateHeaderValue(Date date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.CHINA);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         return dateFormat.format(date);
     }
 }

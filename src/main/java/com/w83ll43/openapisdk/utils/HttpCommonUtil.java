@@ -24,7 +24,7 @@ public class HttpCommonUtil {
                             else{
                                 result.append("&");
                             }
-                            result.append(key).append("=").append(URLEncoder.encode(params.get(key).get(i), SDKConstant.CLOUDAPI_ENCODING.displayName()));
+                            result.append(key).append("=").append(URLEncoder.encode(params.get(key).get(i), SDKConstant.ENCODING.displayName()));
                         }
                     }
                 }
