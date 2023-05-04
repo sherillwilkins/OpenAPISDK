@@ -1,5 +1,6 @@
 package com.w83ll43.openapisdk.client;
 
+import cn.hutool.json.JSONObject;
 import com.w83ll43.openapisdk.constant.HttpConstant;
 import com.w83ll43.openapisdk.enums.Scheme;
 import com.w83ll43.openapisdk.exception.SDKException;
@@ -18,6 +19,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -115,10 +117,16 @@ public class ApacheHttpClient extends BaseApiClient {
             bodyBuilder.setContentType(ContentType.parse(apiRequest.getFirstHeaderValue(HttpConstant.HTTP_HEADER_CONTENT_TYPE)));
         }
 
-        // TODO POST 请求 JSON 数据
-//        JSONObject json = new JSONObject();
-//        json.set("type", "a");
-//        builder.setEntity(new StringEntity(json.toString(),"UTF-8"));
+        // 设置请求的 JSON 数据
+        if (HttpConstant.CONTENT_TYPE_JSON.equals(apiRequest.getMethod().getRequestContentType())) {
+            if (!HttpCommonUtil.isEmpty(apiRequest.getJsonParams())) {
+                JSONObject json = new JSONObject();
+                for (Entry<String, Object> entry : apiRequest.getJsonParams().entrySet()) {
+                    json.set(entry.getKey(), entry.getValue());
+                }
+                builder.setEntity(new StringEntity(json.toString(), "UTF-8"));
+            }
+        }
 
         if (!HttpCommonUtil.isEmpty(apiRequest.getFormParams())) {
             /**

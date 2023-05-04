@@ -71,6 +71,11 @@ public final class ApiRequest {
     private boolean isGenerateNonce = true;
 
     /**
+     * json 参数
+     */
+    private Map<String, Object> jsonParams = new HashMap<>();
+
+    /**
      * 路径参数
      */
     private Map<String, String> pathParams = new HashMap<>();
@@ -336,6 +341,14 @@ public final class ApiRequest {
 
     public void setGenerateNonce(boolean generateNonce) {
         isGenerateNonce = generateNonce;
+    }
+
+    public Map<String, Object> getJsonParams() {
+        return jsonParams;
+    }
+
+    public void setJsonParams(Map<String, Object> jsonParams) {
+        this.jsonParams = jsonParams;
     }
 
     public Map<String, String> getPathParams() {

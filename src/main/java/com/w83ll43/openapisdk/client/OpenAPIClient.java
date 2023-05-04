@@ -2,8 +2,11 @@ package com.w83ll43.openapisdk.client;
 
 import com.w83ll43.openapisdk.constant.SDKConstant;
 import com.w83ll43.openapisdk.enums.HttpMethod;
+import com.w83ll43.openapisdk.enums.ParamPosition;
 import com.w83ll43.openapisdk.model.request.ApiRequest;
 import com.w83ll43.openapisdk.model.response.ApiResponse;
+
+import java.util.HashMap;
 
 public class OpenAPIClient extends ApacheHttpClient {
 
@@ -16,15 +19,39 @@ public class OpenAPIClient extends ApacheHttpClient {
         super.init(appKey, appSecret, GATEWAY_HOST);
     }
 
-    public ApiResponse getRandomJokeByClient() {
+    /**
+     * 获取随机笑话
+     * @return
+     */
+    public ApiResponse getRandomJoke() {
         String path = "/api/joke";
         ApiRequest request = new ApiRequest(HttpMethod.GET, path);
         return sendSyncRequest(request);
     }
 
-    public ApiResponse getRandomSentenceByClient(String type) {
+    /**
+     * 根据类型获取随机句子 POST 请求
+     * @param type
+     * @return
+     */
+    public ApiResponse getRandomSentencePostByType(String type) {
         String path = "/api/sentences/getPost";
         ApiRequest apiRequest = new ApiRequest(HttpMethod.POST, path);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("type", type);
+        apiRequest.setJsonParams(hashMap);
+        return sendSyncRequest(apiRequest);
+    }
+
+    /**
+     * 根据类型获取随机句子 GET 请求
+     * @param type
+     * @return
+     */
+    public ApiResponse getRandomSentenceGetByType(String type) {
+        String path = "/api/sentences/get/[type]";
+        ApiRequest apiRequest = new ApiRequest(HttpMethod.GET, path);
+        apiRequest.addParam("type", type, ParamPosition.PATH, true);
         return sendSyncRequest(apiRequest);
     }
 
